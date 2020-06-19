@@ -1,0 +1,162 @@
+---
+title: "American Slavery and Juneteenth"
+author: "Ethan Tenison"
+date: "6/18/2020"
+output: html_document
+---
+```{r libraries}
+
+
+
+library(tidytuesdayR)
+library(dplyr)
+library(tidyr)
+
+```
+
+
+
+```{r read}
+# Get the Data
+
+blackpast <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-06-16/blackpast.csv')
+census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-06-16/census.csv')
+slave_routes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-06-16/slave_routes.csv')
+african_names <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-06-16/african_names.csv')
+
+# Or read in with tidytuesdayR package (https://github.com/thebioengineer/tidytuesdayR)
+
+# Either ISO-8601 date or year/week works
+
+# Install via devtools::install_github("thebioengineer/tidytuesdayR")
+
+tuesdata <- tidytuesdayR::tt_load('2020-06-16')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 25)
+
+
+blackpast <- tuesdata$blackpast
+
+
+
+```
+
+
+```{r american_slaves}
+#List of American Slave Destinations
+american_ports <- list("Charleston"                                                  
+                        ,"New Orleans"                                                 
+                        ,"Rappahannock"                                                
+                        ,"Puerto Rico, port unspecified"                               
+                        ,"Florida, port unspecified"                                   
+                        ,"Virginia, port unspecified"                                  
+                        ,"York River"                                                  
+                        ,"USA, location unspecified"                                   
+                        ,"Maryland, port unspecified"                                  
+                        ,"Annapolis"                                                   
+                        ,"Newport"                                                     
+                        ,"New York"                                                    
+                        ,"South Carolina, port unspecified"                            
+                        ,"Savannah"                                                                                                  
+                        ,"North Carolina, port unspecified"                            
+                        ,"Eastern New Jersey"                                          
+                        ,"St. Augustine"                                               
+                        ,"Mississippi"                                                 
+                        ,"Pensacola"                                                   
+                        ,"Rhode Island, port unspecified"                              
+                        ,"Philadelphia"                                                
+                        ,"Boston"                                                      
+                        ,"Lower James River"                                           
+                        ,"Upper James River"                                           
+                        ,"South Potomac"                                               
+                        ,"Hampton"                                                     
+                        ,"Perth Amboy"                                                 
+                        ,"Delaware River"                                              
+                        ,"Louisiana"                                                   
+                        ,"Key West"                                                    
+                        ,"Georgia, port unspecified"                                   
+                        ,"San Juan"                                                    
+                        ,"Beaufort"                                                    
+                        ,"Potomac river"                                               
+                        ,"Roanoke"                                                     
+                        ,"Mobile"                                                      
+                        ,"Middletown"                                                  
+                        ,"New London"                                                  
+                        ,"Amelia Island"  
+                        ,"Biloxi"                                                      
+)
+
+
+df <- slave_routes[slave_routes$port_arrival %in% american_ports ,]
+df <- df[!is.na(df$n_slaves_arrived),]
+
+#Created variable for state
+df$state <- "Unknown"
+for (i in 1:length(df$port_arrival)){
+  
+  if(df$port_arrival[i] == "Charleston" | df$port_arrival[i] == "South Carolina, port unspecified" | df$port_arrival[i] == "Beaufort"){        
+                    df$state[i] <- "South Carolina"
+  }
+  else if(df$port_arrival[i] == "Rappahannock" | df$port_arrival[i] == "Virginia, port unspecified" | df$port_arrival[i] == "York River" |
+                                df$port_arrival[i] == "Lower James River" | df$port_arrival[i] == "Upper James River" | 
+                                df$port_arrival[i] == "Hampton" | df$port_arrival[i] == "Potomac river" | df$port_arrival[i] == "Roanoke" ){
+                    df$state[i] <- "Virginia"
+  }
+  else if(df$port_arrival[i] == "Puerto Rico, port unspecified" | df$port_arrival[i] == "San Juan"){
+                    df$state[i] <- "Puerto Rico"
+  }
+  else if(df$port_arrival[i] == "Florida, port unspecified" | df$port_arrival[i] == "St. Augustine" | df$port_arrival[i] == "Pensacola" |
+                                df$port_arrival[i] == "Key West" | df$port_arrival[i] == "Amelia Island" ){
+                    df$state[i] <- "Florida"
+  }
+  else if(df$port_arrival[i] == "Maryland, port unspecified" | df$port_arrival[i] == "Annapolis" | df$port_arrival[i] == "South Potomac"){
+                    df$state[i] <- "Maryland"
+  }
+  else if(df$port_arrival[i] == "Newport" | df$port_arrival[i] == "Rhode Island, port unspecified" ){
+                    df$state[i] <- "Rhode Island"
+  }
+  else if(df$port_arrival[i] == "New York"){
+                    df$state[i] <- "New York"
+  }
+  else if(df$port_arrival[i] == "Savannah" | df$port_arrival[i] == "Georgia, port unspecified" ){
+                    df$state[i] <- "Georgia"
+  }
+  else if(df$port_arrival[i] == "North Carolina, port unspecified"){
+                    df$state[i] <- "North Carolina"
+  }
+  else if(df$port_arrival[i] == "Eastern New Jersey" | df$port_arrival[i] == "Perth Amboy"){
+                    df$state[i] <- "New Jersey"
+  }
+  else if(df$port_arrival[i] == "Mississippi" | df$port_arrival[i] == "Biloxi" ){
+                    df$state[i] <- "Mississippi"
+  }
+  else if(df$port_arrival[i] == "Philadelphia"){
+                    df$state[i] <- "Pennslyvania"
+  }
+  else if(df$port_arrival[i] == "Delaware River"){
+                    df$state[i] <- "Delaware"
+  }
+  else if(df$port_arrival[i] == "Boston"){
+                    df$state[i] <- "Massachusetts"
+  }
+  else if(df$port_arrival[i] == "Louisiana"){
+                    df$state[i] <- "Louisiana"
+  }
+  else if(df$port_arrival[i] == "Louisiana"){
+                    df$state[i] <- "Louisiana"
+  }
+  else if(df$port_arrival[i] == "Mobile"){
+                    df$state[i] <- "Alabama"
+  }
+  else if(df$port_arrival[i] == "Middletown" | df$port_arrival[i] == "New London"){
+                    df$state[i] <- "Connecticut"
+  }
+  
+}
+
+
+df_states <- df %>% group_by(state) %>% summarize
+
+write.csv(df, "american_slave_arrivals.csv")
+
+
+```
